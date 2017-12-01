@@ -1,0 +1,6 @@
+bin/*
+build/*
+
+qtcreator/.qmake.stash
+qtcreator/Makefile
+qtcreator/nightwatch.pro.user

@@ -22,11 +22,26 @@
 * SOFTWARE.
 ******************************************************************************/
 
-#include "application.hpp"
+#ifndef NIGHTWATCH_WINDOW_HPP
+#define NIGHTWATCH_WINDOW_HPP
 
-int main(int argc, char** argv)
+#include <memory>
+#include <QMainWindow>
+
+namespace Ui {class window;}
+
+class Window : public QMainWindow
 {
-    Application nightwatch;
+public:
+    Window();
 
-    return nightwatch.run(argc, argv);
-}
+private:
+    std::unique_ptr<Ui::window> ui;
+
+    Window(const Window&)            = delete;
+    Window(Window&&)                 = delete;
+    Window& operator=(const Window&) = delete;
+    Window& operator=(Window&&)      = delete;
+};
+
+#endif

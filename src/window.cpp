@@ -22,11 +22,12 @@
 * SOFTWARE.
 ******************************************************************************/
 
-#include "application.hpp"
+#include "window.hpp"
+#include "ui_window.h"
 
-int main(int argc, char** argv)
+Window::Window()
 {
-    Application nightwatch;
-
-    return nightwatch.run(argc, argv);
+    ui.reset(new Ui::window);
+    ui->setupUi(this);
+    this->hide();
 }

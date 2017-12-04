@@ -22,11 +22,40 @@
 * SOFTWARE.
 ******************************************************************************/
 
-#include "application.hpp"
+#ifndef NIGHTWATCH_APPLICATION_HPP
+#define NIGHTWATCH_APPLICATION_HPP
 
-int main(int argc, char** argv)
+#include <memory>
+#include <QObject>
+
+class Window;
+
+class Application : public QObject
 {
-    Application nightwatch;
+    Q_OBJECT
 
-    return nightwatch.run(argc, argv);
-}
+public:
+    Application();
+    ~Application();
+
+    int run(int argc, char** argv);
+
+private:
+    std::unique_ptr<Window> window;
+
+    Application(const Application&)            = delete;
+    Application(Application&&)                 = delete;
+    Application& operator=(const Application&) = delete;
+    Application& operator=(Application&&)      = delete;
+
+private slots:
+    void startup();
+
+    void display_button_clicked();
+    void suspend_button_clicked();
+
+    void update_display_button();
+    void update_suspend_button();
+};
+
+#endif

@@ -23,9 +23,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
-    ../src/main.cpp
+    ../src/main.cpp \
+    ../src/application.cpp \
+    ../src/window.cpp
 
-HEADERS +=
+HEADERS += \
+    ../src/application.hpp \
+    ../src/window.hpp
 
 CONFIG(debug, debug|release) {
     BUILD_DIR = ../build/qtcreator/debug
@@ -50,3 +54,8 @@ UI_DIR      = $$BUILD_DIR
 #    ../assets/nightwatch.qrc
 
 #RC_FILE = ../assets/nightwatch.rc
+
+FORMS += \
+    ../forms/window.ui
+
+win32: LIBS += -lUser32 -lPowrProf

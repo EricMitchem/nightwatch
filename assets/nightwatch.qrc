@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/nightwatch.ico</file>
+    </qresource>
+</RCC>

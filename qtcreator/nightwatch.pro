@@ -50,10 +50,10 @@ OBJECTS_DIR = $$BUILD_DIR
 RCC_DIR     = $$BUILD_DIR
 UI_DIR      = $$BUILD_DIR
 
-#RESOURCES += \
-#    ../assets/nightwatch.qrc
+RESOURCES += \
+    ../assets/nightwatch.qrc
 
-#RC_FILE = ../assets/nightwatch.rc
+RC_FILE = ../assets/nightwatch.rc
 
 FORMS += \
     ../forms/window.ui

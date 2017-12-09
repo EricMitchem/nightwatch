@@ -22,6 +22,7 @@
 * SOFTWARE.
 ******************************************************************************/
 
+#include <cassert>
 #include <Windows.h>
 #include <PowrProf.h>
 #include <QApplication>
@@ -29,14 +30,25 @@
 #include <QPushButton>
 #include <QTimer>
 #include "application.hpp"
+#include "systemtrayicon.hpp"
 #include "window.hpp"
 
 void displays_off(Window* window);
 void computer_suspend(Window* window);
 
-Application::Application() {}
+Application* Application::_instance = nullptr;
 
-Application::~Application() {}
+Application::Application()
+{
+    assert(Application::_instance == nullptr);
+    Application::_instance = this;
+}
+
+Application::~Application()
+{
+    assert(Application::_instance == this);
+    Application::_instance = nullptr;
+}
 
 int Application::run(int argc, char** argv)
 {
@@ -51,9 +63,37 @@ int Application::run(int argc, char** argv)
     return app.exec();
 }
 
+Application* Application::instance()
+{
+    return Application::_instance;
+}
+
+Window* Application::window()
+{
+    return Application::instance()->_window;
+}
+
+SystemTrayIcon* Application::icon()
+{
+    return Application::instance()->_icon;
+}
+
+void Application::quit()
+{
+    qApp->quit();
+}
+
 void Application::startup()
 {
-    window.reset(new Window);
+    qApp->setQuitOnLastWindowClosed(false);
+
+    this->_window = new Window;
+    this->_icon   = new SystemTrayIcon;
+
+    emit starting_up();
+    emit started();
+
+    connect(qApp, &QApplication::aboutToQuit, this, &Application::shutdown);
 
     auto display_timer = new QTimer(this);
     auto suspend_timer = new QTimer(this);
@@ -64,20 +104,29 @@ void Application::startup()
     connect(display_timer, &QTimer::timeout, this, &Application::update_display_button);
     connect(suspend_timer, &QTimer::timeout, this, &Application::update_suspend_button);
 
-    auto display_button = window->findChild<QPushButton*>("display_button");
+    auto display_button = this->_window->findChild<QPushButton*>("display_button");
     connect(display_button, &QPushButton::clicked, this, &Application::display_button_clicked);
 
-    auto suspend_button = window->findChild<QPushButton*>("suspend_button");
+    auto suspend_button = this->_window->findChild<QPushButton*>("suspend_button");
     connect(suspend_button, &QPushButton::clicked, this, &Application::suspend_button_clicked);
+}
 
-    window->show();
+void Application::shutdown()
+{
+    emit shutting_down();
+
+    delete this->_icon;
+    this->_icon = nullptr;
+
+    delete this->_window;
+    this->_window = nullptr;
 }
 
 void Application::display_button_clicked()
 {
     auto display_timer  = this->findChild<QTimer*>("display_timer");
-    auto display_button = window->findChild<QPushButton*>("display_button");
-    auto suspend_button = window->findChild<QPushButton*>("suspend_button");
+    auto display_button = this->_window->findChild<QPushButton*>("display_button");
+    auto suspend_button = this->_window->findChild<QPushButton*>("suspend_button");
 
     display_button->setDisabled(true);
     suspend_button->setDisabled(true);
@@ -89,8 +138,8 @@ void Application::display_button_clicked()
 void Application::suspend_button_clicked()
 {
     auto suspend_timer  = this->findChild<QTimer*>("suspend_timer");
-    auto display_button = window->findChild<QPushButton*>("display_button");
-    auto suspend_button = window->findChild<QPushButton*>("suspend_button");
+    auto display_button = this->_window->findChild<QPushButton*>("display_button");
+    auto suspend_button = this->_window->findChild<QPushButton*>("suspend_button");
 
     display_button->setDisabled(true);
     suspend_button->setDisabled(true);
@@ -104,8 +153,8 @@ void Application::update_display_button()
     static unsigned int countdown = 5;
 
     auto display_timer  = this->findChild<QTimer*>("display_timer");
-    auto display_button = window->findChild<QPushButton*>("display_button");
-    auto suspend_button = window->findChild<QPushButton*>("suspend_button");
+    auto display_button = this->_window->findChild<QPushButton*>("display_button");
+    auto suspend_button = this->_window->findChild<QPushButton*>("suspend_button");
 
     if(countdown > 0)
     {
@@ -121,7 +170,7 @@ void Application::update_display_button()
         suspend_button->setEnabled(true);
         display_timer->stop();
 
-        displays_off(window.get());
+        displays_off(this->_window);
     }
 }
 
@@ -130,8 +179,8 @@ void Application::update_suspend_button()
     static unsigned int countdown = 5;
 
     auto suspend_timer  = this->findChild<QTimer*>("suspend_timer");
-    auto display_button = window->findChild<QPushButton*>("display_button");
-    auto suspend_button = window->findChild<QPushButton*>("suspend_button");
+    auto display_button = this->_window->findChild<QPushButton*>("display_button");
+    auto suspend_button = this->_window->findChild<QPushButton*>("suspend_button");
 
     if(countdown > 0)
     {
@@ -147,7 +196,7 @@ void Application::update_suspend_button()
         display_button->setEnabled(true);
         suspend_timer->stop();
 
-        computer_suspend(window.get());
+        computer_suspend(this->_window);
     }
 }
 

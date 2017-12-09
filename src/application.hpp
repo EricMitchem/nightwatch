@@ -25,9 +25,9 @@
 #ifndef NIGHTWATCH_APPLICATION_HPP
 #define NIGHTWATCH_APPLICATION_HPP
 
-#include <memory>
 #include <QObject>
 
+class SystemTrayIcon;
 class Window;
 
 class Application : public QObject
@@ -40,8 +40,23 @@ public:
 
     int run(int argc, char** argv);
 
+    static Application*    instance();
+    static Window*         window();
+    static SystemTrayIcon* icon();
+
+public slots:
+    void quit();
+
+signals:
+    void starting_up();
+    void started();
+    void shutting_down();
+
 private:
-    std::unique_ptr<Window> window;
+    Window*         _window;
+    SystemTrayIcon* _icon;
+
+    static Application* _instance;
 
     Application(const Application&)            = delete;
     Application(Application&&)                 = delete;
@@ -50,6 +65,7 @@ private:
 
 private slots:
     void startup();
+    void shutdown();
 
     void display_button_clicked();
     void suspend_button_clicked();

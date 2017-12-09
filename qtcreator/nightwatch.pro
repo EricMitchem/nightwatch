@@ -25,11 +25,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     ../src/main.cpp \
     ../src/application.cpp \
-    ../src/window.cpp
+    ../src/window.cpp \
+    ../src/systemtrayicon.cpp
 
 HEADERS += \
     ../src/application.hpp \
-    ../src/window.hpp
+    ../src/window.hpp \
+    ../src/systemtrayicon.hpp
 
 CONFIG(debug, debug|release) {
     BUILD_DIR = ../build/qtcreator/debug

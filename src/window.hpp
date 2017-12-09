@@ -25,23 +25,33 @@
 #ifndef NIGHTWATCH_WINDOW_HPP
 #define NIGHTWATCH_WINDOW_HPP
 
-#include <memory>
 #include <QMainWindow>
 
 namespace Ui {class window;}
 
 class Window : public QMainWindow
 {
+    Q_OBJECT
+
 public:
     Window();
+    ~Window() = default;
+
+public slots:
+    void toggle_visibility();
 
 private:
-    std::unique_ptr<Ui::window> ui;
+    Ui::window* ui;
 
     Window(const Window&)            = delete;
     Window(Window&&)                 = delete;
     Window& operator=(const Window&) = delete;
     Window& operator=(Window&&)      = delete;
+
+private slots:
+    void starting_up();
+    void started();
+    void shutting_down();
 };
 
 #endif

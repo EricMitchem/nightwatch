@@ -22,50 +22,35 @@
 * SOFTWARE.
 ******************************************************************************/
 
-#include "application.hpp"
-#include "window.hpp"
-#include "ui_window.h"
+#ifndef NIGHTWATCH_SYSTEMTRAYICON_HPP
+#define NIGHTWATCH_SYSTEMTRAYICON_HPP
 
-Window::Window()
+#include <QSystemTrayIcon>
+
+class SystemTrayIcon : public QSystemTrayIcon
 {
-    this->hide();
-    connect(Application::instance(), &Application::starting_up, this, &Window::starting_up);
-}
+    Q_OBJECT
 
-void Window::toggle_visibility()
-{
-    if(this->isHidden())
-    {
-        this->show();
-        this->activateWindow();
-    }
+public:
+    SystemTrayIcon();
+    ~SystemTrayIcon() = default;
 
-    else
-    {
-        this->hide();
-    }
-}
+signals:
+    void double_clicked();
 
-void Window::starting_up()
-{
-    auto app = Application::instance();
+private:
+    SystemTrayIcon(const SystemTrayIcon&)            = delete;
+    SystemTrayIcon(SystemTrayIcon&&)                 = delete;
+    SystemTrayIcon& operator=(const SystemTrayIcon&) = delete;
+    SystemTrayIcon& operator=(SystemTrayIcon&&)      = delete;
 
-    connect(app, &Application::started, this, &Window::started);
-    connect(app, &Application::shutting_down, this, &Window::shutting_down);
+private slots:
+    void starting_up();
+    void started();
+    void shutting_down();
+    void _activated(ActivationReason reason);
+    void showhide_triggered();
+    void exit_triggered();
+};
 
-    this->ui = new Ui::window;
-    this->ui->setupUi(this);
-}
-
-void Window::started()
-{
-    this->show();
-}
-
-void Window::shutting_down()
-{
-    this->hide();
-    this->setCentralWidget(nullptr);
-    delete this->ui;
-    this->ui = nullptr;
-}
+#endif

@@ -26,12 +26,14 @@ SOURCES += \
     ../src/main.cpp \
     ../src/application.cpp \
     ../src/window.cpp \
-    ../src/systemtrayicon.cpp
+    ../src/systemtrayicon.cpp \
+    ../src/aboutdialog.cpp
 
 HEADERS += \
     ../src/application.hpp \
     ../src/window.hpp \
-    ../src/systemtrayicon.hpp
+    ../src/systemtrayicon.hpp \
+    ../src/aboutdialog.hpp
 
 CONFIG(debug, debug|release) {
     BUILD_DIR = ../build/qtcreator/debug
@@ -58,6 +60,7 @@ RESOURCES += \
 RC_FILE = ../assets/nightwatch.rc
 
 FORMS += \
-    ../forms/window.ui
+    ../forms/window.ui \
+    ../forms/about.ui
 
 win32: LIBS += -lUser32 -lPowrProf

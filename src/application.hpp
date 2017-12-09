@@ -27,6 +27,7 @@
 
 #include <QObject>
 
+class AboutDialog;
 class SystemTrayIcon;
 class Window;
 
@@ -42,9 +43,10 @@ public:
 
     static Application*    instance();
     static Window*         window();
-    static SystemTrayIcon* icon();
+    static QString         version();
 
 public slots:
+    void about_nightwatch();
     void quit();
 
 signals:
@@ -55,8 +57,13 @@ signals:
 private:
     Window*         _window;
     SystemTrayIcon* _icon;
+    AboutDialog*    _about;
 
     static Application* _instance;
+
+    static const unsigned int version_major = 1;
+    static const unsigned int version_minor = 0;
+    static const unsigned int version_patch = 1;
 
     Application(const Application&)            = delete;
     Application(Application&&)                 = delete;

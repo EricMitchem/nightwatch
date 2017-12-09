@@ -22,42 +22,39 @@
 * SOFTWARE.
 ******************************************************************************/
 
-#ifndef NIGHTWATCH_WINDOW_HPP
-#define NIGHTWATCH_WINDOW_HPP
+#include "aboutdialog.hpp"
+#include "application.hpp"
+#include "window.hpp"
+#include "ui_about.h"
 
-#include <QMainWindow>
-
-namespace Ui {class window;}
-
-class Window : public QMainWindow
+AboutDialog::AboutDialog(Window* window)
+    : QDialog(window)
 {
-    Q_OBJECT
+    this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    this->hide();
+    connect(Application::instance(), &Application::starting_up, this, &AboutDialog::starting_up);
+}
 
-public:
-    Window();
-    ~Window() = default;
+void AboutDialog::starting_up()
+{
+    auto app = Application::instance();
 
-public slots:
-    void toggle_visibility();
+    connect(app, &Application::started, this, &AboutDialog::started);
+    connect(app, &Application::shutting_down, this, &AboutDialog::shutting_down);
 
-signals:
-    void visibility_changed(bool visible);
+    this->ui = new Ui::about;
+    this->ui->setupUi(this);
 
-private:
-    Ui::window* ui;
+    this->ui->version_label->setText(Application::version());
+}
 
-    void hideEvent(QHideEvent* event);
-    void showEvent(QShowEvent* event);
+void AboutDialog::started()
+{
+}
 
-    Window(const Window&)            = delete;
-    Window(Window&&)                 = delete;
-    Window& operator=(const Window&) = delete;
-    Window& operator=(Window&&)      = delete;
-
-private slots:
-    void starting_up();
-    void started();
-    void shutting_down();
-};
-
-#endif
+void AboutDialog::shutting_down()
+{
+    this->hide();
+    delete this->ui;
+    this->ui = nullptr;
+}

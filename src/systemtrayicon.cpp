@@ -34,7 +34,8 @@ SystemTrayIcon::SystemTrayIcon()
 
 void SystemTrayIcon::starting_up()
 {
-    auto app = Application::instance();
+    auto app    = Application::instance();
+    auto window = Application::window();
 
     connect(app, &Application::started, this, &SystemTrayIcon::started);
     connect(app, &Application::shutting_down, this, &SystemTrayIcon::shutting_down);
@@ -42,18 +43,23 @@ void SystemTrayIcon::starting_up()
 
     auto menu = new QMenu;
 
-    // TODO: Make text contextual
     auto act_showhide = new QAction(menu);
     act_showhide->setObjectName("showhide");
     act_showhide->setText("Show/Hide");
-    connect(act_showhide, &QAction::triggered, this, &SystemTrayIcon::showhide_triggered);
+    connect(act_showhide, &QAction::triggered, window, &Window::toggle_visibility);
+
+    auto act_about = new QAction(menu);
+    act_about->setObjectName("about");
+    act_about->setText("About nightwatch");
+    connect(act_about, &QAction::triggered, app,  &Application::about_nightwatch);
 
     auto act_exit = new QAction(menu);
     act_exit->setObjectName("exit");
     act_exit->setText("Exit");
-    connect(act_exit, &QAction::triggered, this, &SystemTrayIcon::exit_triggered);
+    connect(act_exit, &QAction::triggered, app, &Application::quit);
 
     menu->addAction(act_showhide);
+    menu->addAction(act_about);
     menu->addAction(act_exit);
 
     this->setContextMenu(menu);
@@ -64,7 +70,14 @@ void SystemTrayIcon::starting_up()
 
 void SystemTrayIcon::started()
 {
-    connect(this, &SystemTrayIcon::double_clicked, Application::window(), &Window::toggle_visibility);
+    auto window    = Application::window();
+    bool hidden    = window->isHidden();
+    bool minimized = window->isMinimized();
+
+    update_visibility(!(hidden || minimized));
+
+    connect(this, &SystemTrayIcon::double_clicked, window, &Window::toggle_visibility);
+    connect(window, &Window::visibility_changed, this, &SystemTrayIcon::update_visibility);
 }
 
 void SystemTrayIcon::shutting_down()
@@ -81,12 +94,17 @@ void SystemTrayIcon::_activated(ActivationReason reason)
     }
 }
 
-void SystemTrayIcon::showhide_triggered()
+void SystemTrayIcon::update_visibility(bool visible)
 {
-    Application::window()->toggle_visibility();
-}
+    auto act_showhide = this->contextMenu()->findChild<QAction*>("showhide");
 
-void SystemTrayIcon::exit_triggered()
-{
-    Application::instance()->quit();
+    if(visible == true)
+    {
+        act_showhide->setText("Hide");
+    }
+
+    else
+    {
+        act_showhide->setText("Show");
+    }
 }

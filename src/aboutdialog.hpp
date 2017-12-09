@@ -22,37 +22,29 @@
 * SOFTWARE.
 ******************************************************************************/
 
-#ifndef NIGHTWATCH_WINDOW_HPP
-#define NIGHTWATCH_WINDOW_HPP
+#ifndef NIGHTWATCH_ABOUTDIALOG_HPP
+#define NIGHTWATCH_ABOUTDIALOG_HPP
 
-#include <QMainWindow>
+#include <QDialog>
 
-namespace Ui {class window;}
+namespace Ui {class about;}
+class Window;
 
-class Window : public QMainWindow
+class AboutDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    Window();
-    ~Window() = default;
-
-public slots:
-    void toggle_visibility();
-
-signals:
-    void visibility_changed(bool visible);
+    explicit AboutDialog(Window* window);
+    ~AboutDialog() = default;
 
 private:
-    Ui::window* ui;
+    Ui::about* ui;
 
-    void hideEvent(QHideEvent* event);
-    void showEvent(QShowEvent* event);
-
-    Window(const Window&)            = delete;
-    Window(Window&&)                 = delete;
-    Window& operator=(const Window&) = delete;
-    Window& operator=(Window&&)      = delete;
+    AboutDialog(const AboutDialog&)            = delete;
+    AboutDialog(AboutDialog&&)                 = delete;
+    AboutDialog& operator=(const AboutDialog&) = delete;
+    AboutDialog& operator=(AboutDialog&&)      = delete;
 
 private slots:
     void starting_up();

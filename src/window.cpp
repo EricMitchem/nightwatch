@@ -34,9 +34,9 @@ Window::Window()
 
 void Window::toggle_visibility()
 {
-    if(this->isHidden())
+    if(this->isHidden() || this->isMinimized())
     {
-        this->show();
+        this->showNormal();
         this->activateWindow();
     }
 
@@ -44,6 +44,18 @@ void Window::toggle_visibility()
     {
         this->hide();
     }
+}
+
+void Window::hideEvent(QHideEvent* event)
+{
+    QMainWindow::hideEvent(event);
+    emit visibility_changed(false);
+}
+
+void Window::showEvent(QShowEvent* event)
+{
+    QMainWindow::showEvent(event);
+    emit visibility_changed(true);
 }
 
 void Window::starting_up()

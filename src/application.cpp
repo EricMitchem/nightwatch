@@ -29,6 +29,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QTimer>
+#include "aboutdialog.hpp"
 #include "application.hpp"
 #include "systemtrayicon.hpp"
 #include "window.hpp"
@@ -73,9 +74,14 @@ Window* Application::window()
     return Application::instance()->_window;
 }
 
-SystemTrayIcon* Application::icon()
+QString Application::version()
 {
-    return Application::instance()->_icon;
+    return QString("%1.%2.%3").arg(version_major).arg(version_minor).arg(version_patch);
+}
+
+void Application::about_nightwatch()
+{
+    this->_about->show();
 }
 
 void Application::quit()
@@ -89,6 +95,7 @@ void Application::startup()
 
     this->_window = new Window;
     this->_icon   = new SystemTrayIcon;
+    this->_about  = new AboutDialog(this->_window);
 
     emit starting_up();
     emit started();
@@ -114,6 +121,9 @@ void Application::startup()
 void Application::shutdown()
 {
     emit shutting_down();
+
+    delete this->_about;
+    this->_about = nullptr;
 
     delete this->_icon;
     this->_icon = nullptr;

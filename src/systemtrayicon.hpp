@@ -49,8 +49,7 @@ private slots:
     void started();
     void shutting_down();
     void _activated(ActivationReason reason);
-    void showhide_triggered();
-    void exit_triggered();
+    void update_visibility(bool visible);
 };
 
 #endif

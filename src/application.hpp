@@ -41,6 +41,9 @@ public:
 
     int run(int argc, char** argv);
 
+    void turn_off_displays();
+    void suspend_computer();
+
     static Application*    instance();
     static Window*         window();
     static QString         version();
@@ -63,7 +66,7 @@ private:
 
     static const unsigned int version_major = 1;
     static const unsigned int version_minor = 0;
-    static const unsigned int version_patch = 1;
+    static const unsigned int version_patch = 2;
 
     Application(const Application&)            = delete;
     Application(Application&&)                 = delete;
@@ -76,6 +79,7 @@ private slots:
 
     void display_button_clicked();
     void suspend_button_clicked();
+    void cancel_suspend_clicked();
 
     void update_display_button();
     void update_suspend_button();

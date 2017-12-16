@@ -34,8 +34,7 @@
 #include "systemtrayicon.hpp"
 #include "window.hpp"
 
-void displays_off(Window* window);
-void computer_suspend(Window* window);
+static unsigned int SuspendCountdown = 5;
 
 Application* Application::_instance = nullptr;
 
@@ -62,6 +61,44 @@ int Application::run(int argc, char** argv)
     QTimer::singleShot(0, this, &Application::startup);
 
     return app.exec();
+}
+
+void Application::turn_off_displays()
+{
+    HWND   handle      = (HWND) this->_window->winId();
+    LPARAM display_off = 2;
+
+    SendMessageW(handle, WM_SYSCOMMAND, SC_MONITORPOWER, display_off);
+}
+
+void Application::suspend_computer()
+{
+    BOOLEAN result = SetSuspendState(FALSE, FALSE, FALSE);
+
+    if(result == 0)
+    {
+        DWORD  err_code = GetLastError();
+        LPWSTR msg;
+
+        DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                      FORMAT_MESSAGE_FROM_SYSTEM     |
+                      FORMAT_MESSAGE_IGNORE_INSERTS  ;
+
+        FormatMessageW(
+                    flags,
+                    NULL,
+                    err_code,
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                    (LPWSTR) &msg,
+                    0,
+                    NULL);
+
+        QString err_str = QString::fromWCharArray(msg);
+
+        LocalFree(msg);
+
+        QMessageBox::warning(this->_window, "Error", err_str);
+    }
 }
 
 Application* Application::instance()
@@ -152,10 +189,29 @@ void Application::suspend_button_clicked()
     auto suspend_button = this->_window->findChild<QPushButton*>("suspend_button");
 
     display_button->setDisabled(true);
-    suspend_button->setDisabled(true);
+
+    disconnect(suspend_button, &QPushButton::clicked, this, &Application::suspend_button_clicked);
+    connect(suspend_button, &QPushButton::clicked, this, &Application::cancel_suspend_clicked);
 
     suspend_timer->start(1000);
     update_suspend_button();
+}
+
+void Application::cancel_suspend_clicked()
+{
+    auto suspend_timer  = this->findChild<QTimer*>("suspend_timer");
+    auto display_button = this->_window->findChild<QPushButton*>("display_button");
+    auto suspend_button = this->_window->findChild<QPushButton*>("suspend_button");
+
+    SuspendCountdown = 5;
+
+    suspend_button->setText("Sleep");
+    disconnect(suspend_button, &QPushButton::clicked, this, &Application::cancel_suspend_clicked);
+    connect(suspend_button, &QPushButton::clicked, this, &Application::suspend_button_clicked);
+
+    display_button->setEnabled(true);
+
+    suspend_timer->stop();
 }
 
 void Application::update_display_button()
@@ -180,70 +236,34 @@ void Application::update_display_button()
         suspend_button->setEnabled(true);
         display_timer->stop();
 
-        displays_off(this->_window);
+        turn_off_displays();
     }
 }
 
 void Application::update_suspend_button()
 {
-    static unsigned int countdown = 5;
-
     auto suspend_timer  = this->findChild<QTimer*>("suspend_timer");
     auto display_button = this->_window->findChild<QPushButton*>("display_button");
     auto suspend_button = this->_window->findChild<QPushButton*>("suspend_button");
 
-    if(countdown > 0)
+    if(SuspendCountdown > 0)
     {
-        suspend_button->setText(QString::number(countdown));
-        countdown -= 1;
+        suspend_button->setText(QString("Cancel (%1)").arg(QString::number(SuspendCountdown)));
+        SuspendCountdown -= 1;
     }
 
     else
     {
-        countdown = 5;
+        SuspendCountdown = 5;
+
         suspend_button->setText("Sleep");
-        suspend_button->setEnabled(true);
+        disconnect(suspend_button, &QPushButton::clicked, this, &Application::cancel_suspend_clicked);
+        connect(suspend_button, &QPushButton::clicked, this, &Application::suspend_button_clicked);
+
         display_button->setEnabled(true);
+
         suspend_timer->stop();
 
-        computer_suspend(this->_window);
-    }
-}
-
-void displays_off(Window* window)
-{
-    HWND   handle      = (HWND) window->winId();
-    LPARAM display_off = 2;
-
-    SendMessageW(handle, WM_SYSCOMMAND, SC_MONITORPOWER, display_off);
-}
-
-void computer_suspend(Window* window)
-{
-    BOOLEAN result = SetSuspendState(FALSE, FALSE, FALSE);
-
-    if(result == 0)
-    {
-        DWORD  err_code = GetLastError();
-        LPWSTR msg;
-
-        DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                      FORMAT_MESSAGE_FROM_SYSTEM     |
-                      FORMAT_MESSAGE_IGNORE_INSERTS  ;
-
-        FormatMessageW(
-                    flags,
-                    NULL,
-                    err_code,
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                    (LPWSTR) &msg,
-                    0,
-                    NULL);
-
-        QString err_str = QString::fromWCharArray(msg);
-
-        LocalFree(msg);
-
-        QMessageBox::warning(window, "Error", err_str);
+        suspend_computer();
     }
 }
